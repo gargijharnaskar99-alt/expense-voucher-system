@@ -1,0 +1,270 @@
+@baseUrl = http://localhost:5000
+
+@employeeToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM0ZGY1Mzk2NTk2NGVlYWU3YTNiZCIsInJvbGUiOiJlbXBsb3llZSIsImlhdCI6MTc4NTUwNTE2NiwiZXhwIjoxNzg2MTA5OTY2fQ.MIemt_6js_Soio1xentKGMFfTgbobkxbDXPAROjn6OU
+
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM2YTIxMGQ0OWRlZTE2YjUxMTc3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NTUwNTExNCwiZXhwIjoxNzg2MTA5OTE0fQ.Yt2KPV5C28lRBhbzszCZbsamvMd4hgoxgIjg1ohtfZ0
+
+####################################################
+# Home Route
+####################################################
+
+GET {{baseUrl}}/
+
+###
+
+####################################################
+# Register Employee
+####################################################
+
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Rahul",
+  "email": "rahul@gmail.com",
+  "password": "123456",
+  "role": "employee"
+}
+
+###
+
+####################################################
+# Register Admin
+####################################################
+
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Admin",
+  "email": "admin@gmail.com",
+  "password": "admin123",
+  "role": "admin"
+}
+
+###
+
+####################################################
+# Login Employee
+####################################################
+
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "rahul@gmail.com",
+  "password": "123456"
+}
+
+###
+
+####################################################
+# Login Admin
+####################################################
+
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@gmail.com",
+  "password": "admin123"
+}
+
+###
+####################################################
+# Create Expense
+####################################################
+
+POST {{baseUrl}}/api/expenses
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM2YTIxMGQ0OWRlZTE2YjUxMTc3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NTQ5MDgzMSwiZXhwIjoxNzg2MDk1NjMxfQ.742uh6Vqcv3WnXzVtPjBPw77Rsrns0ntraxcIJVtWU0
+Content-Type: application/json
+
+{
+  "title": "Client Meeting",
+  "category": "Travel",
+  "amount": 450,
+  "description": "Cab fare to client office",
+  "expenseDate": "2026-07-31"
+}
+
+###
+####################################################
+# Get My Expenses
+####################################################
+
+GET {{baseUrl}}/api/expenses
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM2YTIxMGQ0OWRlZTE2YjUxMTc3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NTQ5MDgzMSwiZXhwIjoxNzg2MDk1NjMxfQ.742uh6Vqcv3WnXzVtPjBPw77Rsrns0ntraxcIJVtWU0
+
+###
+####################################################
+# Update Expense
+####################################################
+
+PUT {{baseUrl}}/api/expenses/6a6c726a29427ff9d5e4f8d6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM2YTIxMGQ0OWRlZTE2YjUxMTc3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NTQ5MDgzMSwiZXhwIjoxNzg2MDk1NjMxfQ.742uh6Vqcv3WnXzVtPjBPw77Rsrns0ntraxcIJVtWU0
+Content-Type: application/json
+
+{
+  "title": "Client Meeting Updated",
+  "category": "Travel",
+  "amount": 600,
+  "description": "Updated Cab Fare"
+}
+
+###
+####################################################
+# Delete Expense
+####################################################
+
+DELETE {{baseUrl}}/api/expenses/6a6c726a29427ff9d5e4f8d6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM2YTIxMGQ0OWRlZTE2YjUxMTc3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NTQ5MDgzMSwiZXhwIjoxNzg2MDk1NjMxfQ.742uh6Vqcv3WnXzVtPjBPw77Rsrns0ntraxcIJVtWU0
+
+###
+####################################################
+# Admin - Get All Expenses
+####################################################
+
+GET {{baseUrl}}/api/expenses/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM2YTIxMGQ0OWRlZTE2YjUxMTc3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NTQ5MzEyMywiZXhwIjoxNzg2MDk3OTIzfQ.qGrofZNvEj1F43odPDXoQfo2jFiadwym4MXNSqRiKcU
+
+###
+POST {{baseUrl}}/api/expenses
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM2YTIxMGQ0OWRlZTE2YjUxMTc3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NTQ5MzEyMywiZXhwIjoxNzg2MDk3OTIzfQ.qGrofZNvEj1F43odPDXoQfo2jFiadwym4MXNSqRiKcU
+Content-Type: application/json
+
+{
+  "title": "Office Lunch",
+  "category": "Food",
+  "amount": 550,
+  "description": "Team Lunch",
+  "expenseDate": 
+  "2026-07-31"
+}
+
+###
+####################################################
+# Admin - Approve Expense
+####################################################
+
+PATCH {{baseUrl}}/api/expenses/6a6c76fa40577b2d624110f8/approve
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM2YTIxMGQ0OWRlZTE2YjUxMTc3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NTQ5MzEyMywiZXhwIjoxNzg2MDk3OTIzfQ.qGrofZNvEj1F43odPDXoQfo2jFiadwym4MXNSqRiKcU
+Content-Type: application/json
+
+{
+  "remarks": "Approved by Finance Team"
+}
+
+###
+####################################################
+# Admin - Reject Expense
+####################################################
+
+PATCH {{baseUrl}}/api/expenses/6a6c7c7417d005391a0608ad/reject
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM2YTIxMGQ0OWRlZTE2YjUxMTc3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NTQ5MzEyMywiZXhwIjoxNzg2MDk3OTIzfQ.qGrofZNvEj1F43odPDXoQfo2jFiadwym4MXNSqRiKcU
+Content-Type: application/json
+
+{
+  "remarks": "Receipt is missing. Please resubmit."
+}
+
+###
+####################################################
+# Get Expense By ID
+####################################################
+
+GET {{baseUrl}}/api/expenses/6a6c7c7417d005391a0608ad
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM2YTIxMGQ0OWRlZTE2YjUxMTc3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NTQ5MzEyMywiZXhwIjoxNzg2MDk3OTIzfQ.qGrofZNvEj1F43odPDXoQfo2jFiadwym4MXNSqRiKcU
+
+###
+POST {{baseUrl}}/api/expenses
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM0ZGY1Mzk2NTk2NGVlYWU3YTNiZCIsInJvbGUiOiJlbXBsb3llZSIsImlhdCI6MTc4NTQ5NzMxNCwiZXhwIjoxNzg2MTAyMTE0fQ.Eqn2v0vykey4bath8IromrTQWvicCGysgjz7kgBlaXo
+Content-Type: application/json
+
+{
+    "title":"Bus Ticket",
+    "category":"Travel",
+    "amount":150,
+    "description":"Office Travel",
+    "expenseDate":"2026-07-31"
+}
+
+###
+GET {{baseUrl}}/api/expenses/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM2YTIxMGQ0OWRlZTE2YjUxMTc3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NTUwNDA3OCwiZXhwIjoxNzg2MTA4ODc4fQ.RHPcbpE0RmkqNAGHRAxj6TARFinA635qz0I8XKLMdXM
+###
+####################################################
+# Search by Title
+####################################################
+
+GET {{baseUrl}}/api/expenses/search?title=Bus
+Authorization: Bearer {{adminToken}}
+
+###
+####################################################
+# Search by Category
+####################################################
+
+GET {{baseUrl}}/api/expenses/search?category=Travel
+Authorization: Bearer {{adminToken}}
+
+###
+####################################################
+# Search by Status
+####################################################
+
+GET {{baseUrl}}/api/expenses/search?status=Pending
+Authorization: Bearer {{adminToken}}
+
+###
+####################################################
+# Multiple Filters
+####################################################
+
+GET {{baseUrl}}/api/expenses/search?category=Travel&status=Pending
+Authorization: Bearer {{adminToken}}
+
+###
+####################################################
+# Dashboard Statistics (Admin)
+####################################################
+
+GET {{baseUrl}}/api/expenses/dashboard
+Authorization: Bearer {{adminToken}}
+
+###
+####################################################
+# Dashboard Statistics (Employee)
+####################################################
+
+GET {{baseUrl}}/api/expenses/dashboard
+Authorization: Bearer {{employeeToken}}
+
+###
+
+
+###
+####################################################
+# Upload Receipt
+####################################################
+
+PATCH {{baseUrl}}/api/expenses/6a6c86fff6f51309fc670271/upload
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM0ZGY1Mzk2NTk2NGVlYWU3YTNiZCIsInJvbGUiOiJlbXBsb3llZSIsImlhdCI6MTc4NTUwNDE4NCwiZXhwIjoxNzg2MTA4OTg0fQ.VGMb8AVDiJqDxOcV_NeBpjWvf7gwU_L2_k6VuosdyYg
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="receipt"; filename="bill.pdf"
+Content-Type: application/pdf
+
+< ./bill.pdf
+
+------WebKitFormBoundary--
+
+###
+####################################################
+# Protected Route
+####################################################
+
+GET {{baseUrl}}/api/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNmM2YTIxMGQ0OWRlZTE2YjUxMTc3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NTQ5MDgzMSwiZXhwIjoxNzg2MDk1NjMxfQ.742uh6Vqcv3WnXzVtPjBPw77Rsrns0ntraxcIJVtWU0
+
+###
