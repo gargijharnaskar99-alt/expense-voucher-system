@@ -1,17 +1,35 @@
 import { useEffect, useState } from "react";
-import {
-  Receipt,
-  Clock3,
-  CircleCheckBig,
-  CircleX,
-  IndianRupee,
-} from "lucide-react";
-
 import DashboardLayout from "../../layouts/DashboardLayout";
 import API from "../../api/axios";
 
-export default function Dashboard() {
-  const [stats, setStats] = useState(null);
+import WelcomeCard from "../../components/WelcomeCard";
+import StatCard from "../../components/StatCard";
+import Charts from "../../components/Charts";
+import RecentActivity from "../../components/RecentActivity";
+import LoadingSpinner from "../../components/LoadingSpinner";
+
+import {
+  Users,
+  Receipt,
+  CheckCircle,
+  Clock,
+  XCircle,
+} from "lucide-react";
+
+export default function AdminDashboard() {
+
+  const [loading, setLoading] = useState(true);
+
+  const [expenses, setExpenses] = useState([]);
+
+  const [stats, setStats] = useState({
+    totalEmployees: 0,
+    totalExpenses: 0,
+    totalAmount: 0,
+    approved: 0,
+    pending: 0,
+    rejected: 0,
+  });
 
   useEffect(() => {
     loadDashboard();
@@ -19,96 +37,113 @@ export default function Dashboard() {
 
   const loadDashboard = async () => {
     try {
-      const res = await API.get("/expenses/dashboard");
-      setStats(res.data.statistics);
+
+      const res = await API.get("/expenses/all");
+
+      const data = res.data.expenses;
+
+      setExpenses(data);
+
+      const employeeIds = [
+        ...new Set(data.map((e) => e.employee._id)),
+      ];
+
+      setStats({
+        totalEmployees: employeeIds.length,
+
+        totalExpenses: data.length,
+
+        totalAmount: data.reduce(
+          (sum, item) => sum + item.amount,
+          0
+        ),
+
+        approved: data.filter(
+          (e) => e.status === "Approved"
+        ).length,
+
+        pending: data.filter(
+          (e) => e.status === "Pending"
+        ).length,
+
+        rejected: data.filter(
+          (e) => e.status === "Rejected"
+        ).length,
+      });
+
     } catch (error) {
+
       console.log(error);
+
+    } finally {
+
+      setLoading(false);
+
     }
   };
 
-  if (!stats) {
+  if (loading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center h-[70vh]">
-          <h2 className="text-2xl font-semibold text-gray-600">
-            Loading Dashboard...
-          </h2>
-        </div>
+        <LoadingSpinner text="Loading Dashboard..." />
       </DashboardLayout>
     );
   }
 
   return (
     <DashboardLayout>
-      <h1 className="text-4xl font-bold text-gray-800 mb-8">
-        Admin Dashboard
-      </h1>
+
+      <WelcomeCard />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
 
-        <DashboardCard
-          title="Total Expenses"
+        <StatCard
+          title="Employees"
+          value={stats.totalEmployees}
+          color="bg-indigo-600"
+          icon={<Users size={34} />}
+        />
+
+        <StatCard
+          title="Expenses"
           value={stats.totalExpenses}
           color="bg-blue-600"
-          icon={<Receipt size={32} />}
+          icon={<Receipt size={34} />}
         />
 
-        <DashboardCard
-          title="Pending"
-          value={stats.pending}
-          color="bg-yellow-500"
-          icon={<Clock3 size={32} />}
-        />
-
-        <DashboardCard
+        <StatCard
           title="Approved"
           value={stats.approved}
           color="bg-green-600"
-          icon={<CircleCheckBig size={32} />}
+          icon={<CheckCircle size={34} />}
         />
 
-        <DashboardCard
+        <StatCard
+          title="Pending"
+          value={stats.pending}
+          color="bg-yellow-500"
+          icon={<Clock size={34} />}
+        />
+
+        <StatCard
           title="Rejected"
           value={stats.rejected}
           color="bg-red-600"
-          icon={<CircleX size={32} />}
-        />
-
-        <DashboardCard
-          title="Total Amount"
-          value={`₹${stats.totalAmount}`}
-          color="bg-purple-600"
-          icon={<IndianRupee size={32} />}
+          icon={<XCircle size={34} />}
         />
 
       </div>
+
+      <Charts statistics={stats} />
+
+      <div className="mt-10">
+
+        <RecentActivity
+          expenses={expenses}
+        />
+
+      </div>
+
     </DashboardLayout>
-  );
-}
-
-function DashboardCard({
-  title,
-  value,
-  color,
-  icon,
-}) {
-  return (
-    <div
-      className={`${color} text-white rounded-2xl shadow-lg p-6 hover:scale-105 transition duration-300`}
-    >
-      <div className="flex justify-between items-center">
-
-        <div>
-          <p className="text-sm opacity-90">{title}</p>
-
-          <h2 className="text-3xl font-bold mt-3">
-            {value}
-          </h2>
-        </div>
-
-        <div>{icon}</div>
-
-      </div>
-    </div>
   );
 }

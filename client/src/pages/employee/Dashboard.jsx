@@ -1,17 +1,32 @@
 import { useEffect, useState } from "react";
+import API from "../../api/axios";
+import DashboardLayout from "../../layouts/DashboardLayout";
+
+import WelcomeCard from "../../components/WelcomeCard";
+import StatCard from "../../components/StatCard";
+import Charts from "../../components/Charts";
+import RecentActivity from "../../components/RecentActivity";
+import LoadingSpinner from "../../components/LoadingSpinner";
+
 import {
   Receipt,
-  Clock3,
-  CircleCheckBig,
-  CircleX,
-  IndianRupee,
+  CheckCircle,
+  Clock,
+  XCircle,
 } from "lucide-react";
 
-import DashboardLayout from "../../layouts/DashboardLayout";
-import API from "../../api/axios";
+export default function EmployeeDashboard() {
 
-export default function Dashboard() {
-  const [stats, setStats] = useState(null);
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [stats, setStats] = useState({
+    totalExpenses: 0,
+    totalAmount: 0,
+    approved: 0,
+    pending: 0,
+    rejected: 0,
+  });
 
   useEffect(() => {
     loadDashboard();
@@ -19,19 +34,49 @@ export default function Dashboard() {
 
   const loadDashboard = async () => {
     try {
-      const res = await API.get("/expenses/dashboard");
-      setStats(res.data.statistics);
+
+      const res = await API.get("/expenses");
+
+      const data = res.data.expenses;
+
+      setExpenses(data);
+
+      setStats({
+        totalExpenses: data.length,
+
+        totalAmount: data.reduce(
+          (sum, item) => sum + item.amount,
+          0
+        ),
+
+        approved: data.filter(
+          (e) => e.status === "Approved"
+        ).length,
+
+        pending: data.filter(
+          (e) => e.status === "Pending"
+        ).length,
+
+        rejected: data.filter(
+          (e) => e.status === "Rejected"
+        ).length,
+      });
+
     } catch (error) {
+
       console.log(error);
+
+    } finally {
+
+      setLoading(false);
+
     }
   };
 
-  if (!stats) {
+  if (loading) {
     return (
       <DashboardLayout>
-        <div className="text-center text-xl mt-20">
-          Loading Dashboard...
-        </div>
+        <LoadingSpinner text="Loading Dashboard..." />
       </DashboardLayout>
     );
   }
@@ -39,78 +84,50 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
 
-      <h1 className="text-4xl font-bold mb-8 text-gray-800">
-        Employee Dashboard
-      </h1>
+      <WelcomeCard />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-        <DashboardCard
+        <StatCard
           title="Total Expenses"
           value={stats.totalExpenses}
-          icon={<Receipt size={32} />}
           color="bg-blue-600"
+          icon={<Receipt size={36} />}
         />
 
-        <DashboardCard
-          title="Pending"
-          value={stats.pending}
-          icon={<Clock3 size={32} />}
-          color="bg-yellow-500"
-        />
-
-        <DashboardCard
+        <StatCard
           title="Approved"
           value={stats.approved}
-          icon={<CircleCheckBig size={32} />}
           color="bg-green-600"
+          icon={<CheckCircle size={36} />}
         />
 
-        <DashboardCard
+        <StatCard
+          title="Pending"
+          value={stats.pending}
+          color="bg-yellow-500"
+          icon={<Clock size={36} />}
+        />
+
+        <StatCard
           title="Rejected"
           value={stats.rejected}
-          icon={<CircleX size={32} />}
           color="bg-red-600"
+          icon={<XCircle size={36} />}
         />
 
-        <DashboardCard
-          title="Total Amount"
-          value={`₹${stats.totalAmount}`}
-          icon={<IndianRupee size={32} />}
-          color="bg-purple-600"
+      </div>
+
+      <Charts statistics={stats} />
+
+      <div className="mt-10">
+
+        <RecentActivity
+          expenses={expenses}
         />
 
       </div>
 
     </DashboardLayout>
-  );
-}
-
-function DashboardCard({
-  title,
-  value,
-  icon,
-  color,
-}) {
-  return (
-    <div
-      className={`${color} rounded-2xl p-6 shadow-lg text-white`}
-    >
-      <div className="flex justify-between items-center">
-
-        <div>
-          <p className="text-sm opacity-90">
-            {title}
-          </p>
-
-          <h2 className="text-3xl font-bold mt-3">
-            {value}
-          </h2>
-        </div>
-
-        <div>{icon}</div>
-
-      </div>
-    </div>
   );
 }

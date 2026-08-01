@@ -3,54 +3,41 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 
-// Admin Pages
+// Admin
 import AdminDashboard from "../pages/admin/Dashboard";
 import AllExpenses from "../pages/admin/AllExpenses";
 
-// Employee Pages
+// Employee
 import EmployeeDashboard from "../pages/employee/Dashboard";
 import MyExpenses from "../pages/employee/MyExpenses";
 import AddExpense from "../pages/employee/AddExpense";
 import EditExpense from "../pages/employee/EditExpense";
 
+// Shared
+import ExpenseDetails from "../pages/ExpenseDetails";
+
 // Protected Route
 import ProtectedRoute from "../components/ProtectedRoute";
 
-function AppRoutes() {
+export default function AppRoutes() {
   return (
     <BrowserRouter>
+
       <Routes>
 
-        {/* Public Routes */}
+        {/* ================= Public Routes ================= */}
 
-        <Route path="/" element={<Login />} />
+        <Route
+          path="/"
+          element={<Login />}
+        />
 
         <Route
           path="/register"
           element={<Register />}
         />
 
-        {/* ================= ADMIN ================= */}
-
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute role="admin">
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/admin/expenses"
-          element={
-            <ProtectedRoute role="admin">
-              <AllExpenses />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ================= EMPLOYEE ================= */}
+        {/* ================= Employee Routes ================= */}
 
         <Route
           path="/employee/dashboard"
@@ -88,7 +75,38 @@ function AppRoutes() {
           }
         />
 
-        {/* 404 */}
+        {/* ================= Admin Routes ================= */}
+
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/expenses"
+          element={
+            <ProtectedRoute role="admin">
+              <AllExpenses />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ================= Shared Routes ================= */}
+
+        <Route
+          path="/expense/:id"
+          element={
+            <ProtectedRoute>
+              <ExpenseDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ================= 404 ================= */}
 
         <Route
           path="*"
@@ -96,8 +114,7 @@ function AppRoutes() {
         />
 
       </Routes>
+
     </BrowserRouter>
   );
 }
-
-export default AppRoutes;

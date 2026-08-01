@@ -1,25 +1,25 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../layouts/DashboardLayout";
 import API from "../../api/axios";
+import DashboardLayout from "../../layouts/DashboardLayout";
 
 export default function AddExpense() {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     title: "",
     category: "",
     amount: "",
+    date: "",
     description: "",
-    expenseDate: "",
   });
 
   const [receipt, setReceipt] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setForm({
+      ...form,
       [e.target.name]: e.target.value,
     });
   };
@@ -27,151 +27,166 @@ export default function AddExpense() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    setLoading(true);
+
     try {
-      setLoading(true);
+      const formData = new FormData();
 
-      const res = await API.post(
-        "/expenses",
-        formData
-      );
+      formData.append("title", form.title);
+      formData.append("category", form.category);
+      formData.append("amount", form.amount);
+      formData.append("date", form.date);
+      formData.append("description", form.description);
 
-      // Upload receipt after expense creation
       if (receipt) {
-        const fileData = new FormData();
-
-        fileData.append("receipt", receipt);
-
-        await API.patch(
-          `/expenses/${res.data.expense._id}/upload`,
-          fileData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        formData.append("receipt", receipt);
       }
 
-      alert("Expense Created Successfully");
+      await API.post("/expenses", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      alert("Expense Added Successfully");
 
       navigate("/employee/my-expenses");
-
     } catch (error) {
-
-      alert(
-        error.response?.data?.message ||
-        "Unable to create expense"
-      );
-
-    } finally {
-
-      setLoading(false);
-
+      console.log(error);
+      alert(error.response?.data?.message || "Failed to add expense");
     }
+
+    setLoading(false);
   };
 
   return (
     <DashboardLayout>
+      <div className="max-w-4xl mx-auto">
 
-      <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8">
+        <div className="bg-white rounded-2xl shadow-lg p-8">
 
-        <h1 className="text-3xl font-bold mb-8">
-          Add New Expense
-        </h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-8">
+            Add New Expense
+          </h1>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
-        >
-
-          <input
-            type="text"
-            name="title"
-            placeholder="Expense Title"
-            value={formData.title}
-            onChange={handleChange}
-            className="w-full border p-3 rounded-lg"
-            required
-          />
-
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            className="w-full border p-3 rounded-lg"
-            required
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-6"
           >
 
-            <option value="">
-              Select Category
-            </option>
+            <div>
+              <label className="block mb-2 font-medium">
+                Expense Title
+              </label>
 
-            <option>Travel</option>
+              <input
+                type="text"
+                name="title"
+                value={form.title}
+                onChange={handleChange}
+                required
+                className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+                placeholder="Office Lunch"
+              />
+            </div>
 
-            <option>Food</option>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <option>Accommodation</option>
+              <div>
+                <label className="block mb-2 font-medium">
+                  Category
+                </label>
 
-            <option>Medical</option>
+                <select
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                  required
+                  className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Select Category</option>
+                  <option>Travel</option>
+                  <option>Food</option>
+                  <option>Office</option>
+                  <option>Medical</option>
+                  <option>Accommodation</option>
+                  <option>Fuel</option>
+                  <option>Other</option>
+                </select>
+              </div>
 
-            <option>Office Supplies</option>
+              <div>
+                <label className="block mb-2 font-medium">
+                  Amount (₹)
+                </label>
 
-            <option>Entertainment</option>
+                <input
+                  type="number"
+                  name="amount"
+                  value={form.amount}
+                  onChange={handleChange}
+                  required
+                  className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+              </div>
 
-            <option>Other</option>
+            </div>
 
-          </select>
+            <div>
+              <label className="block mb-2 font-medium">
+                Expense Date
+              </label>
 
-          <input
-            type="number"
-            name="amount"
-            placeholder="Amount"
-            value={formData.amount}
-            onChange={handleChange}
-            className="w-full border p-3 rounded-lg"
-            required
-          />
+              <input
+                type="date"
+                name="date"
+                value={form.date}
+                onChange={handleChange}
+                required
+                className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+              />
+            </div>
 
-          <input
-            type="date"
-            name="expenseDate"
-            value={formData.expenseDate}
-            onChange={handleChange}
-            className="w-full border p-3 rounded-lg"
-            required
-          />
+            <div>
+              <label className="block mb-2 font-medium">
+                Description
+              </label>
 
-          <textarea
-            rows="4"
-            name="description"
-            placeholder="Description"
-            value={formData.description}
-            onChange={handleChange}
-            className="w-full border p-3 rounded-lg"
-          />
+              <textarea
+                rows="4"
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                placeholder="Enter expense details..."
+                className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+              />
+            </div>
 
-          <input
-            type="file"
-            accept=".jpg,.jpeg,.png,.pdf"
-            onChange={(e) =>
-              setReceipt(e.target.files[0])
-            }
-            className="w-full"
-          />
+            <div>
+              <label className="block mb-2 font-medium">
+                Upload Receipt
+              </label>
 
-          <button
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg"
-          >
-            {loading
-              ? "Saving..."
-              : "Create Expense"}
-          </button>
+              <input
+                type="file"
+                accept=".jpg,.jpeg,.png,.pdf"
+                onChange={(e) => setReceipt(e.target.files[0])}
+                className="w-full border rounded-lg p-3"
+              />
+            </div>
 
-        </form>
+            <button
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition duration-300"
+            >
+              {loading ? "Submitting..." : "Submit Expense"}
+            </button>
+
+          </form>
+
+        </div>
 
       </div>
-
     </DashboardLayout>
   );
 }

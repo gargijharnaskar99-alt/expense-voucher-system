@@ -1,226 +1,354 @@
 import { useEffect, useState } from "react";
-import api from "../../api/axios";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+import API from "../../api/axios";
 import DashboardLayout from "../../layouts/DashboardLayout";
 
-function AllExpenses() {
+import LoadingSpinner from "../../components/LoadingSpinner";
+import EmptyState from "../../components/EmptyState";
+import PageHeader from "../../components/PageHeader";
+import Button from "../../components/Button";
+
+export default function AllExpenses() {
+
+  const navigate = useNavigate();
+
   const [expenses, setExpenses] = useState([]);
+  const [filteredExpenses, setFilteredExpenses] = useState([]);
+
+  const [search, setSearch] = useState("");
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchExpenses();
+    loadExpenses();
   }, []);
 
-  // Fetch all expenses
-  const fetchExpenses = async () => {
-    try {
-      const token = localStorage.getItem("token");
+  useEffect(() => {
 
-      const res = await api.get("/expenses/all", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    const filtered = expenses.filter((expense) =>
+      expense.title.toLowerCase().includes(search.toLowerCase()) ||
+      expense.employee.name
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    );
+
+    setFilteredExpenses(filtered);
+
+  }, [search, expenses]);
+
+  const loadExpenses = async () => {
+
+    try {
+
+      setLoading(true);
+
+      const res = await API.get("/expenses/all");
 
       setExpenses(res.data.expenses);
+
+      setFilteredExpenses(res.data.expenses);
+
     } catch (error) {
-      console.log(error);
-      alert("Failed to fetch expenses");
+
+      toast.error("Unable to load expenses");
+
+    } finally {
+
+      setLoading(false);
+
     }
+
   };
 
-  // Approve Expense
   const approveExpense = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
 
-      await api.patch(
-        `/expenses/${id}/approve`,
-        {
-          remarks: "Approved by Admin",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+    try {
+
+      await API.patch(`/expenses/${id}/approve`, {
+        remarks: "Approved by Admin",
+      });
+
+      toast.success("Expense Approved");
+
+      loadExpenses();
+
+    } catch (error) {
+
+      toast.error(
+        error.response?.data?.message ||
+          "Approval Failed"
       );
 
-      alert("Expense Approved Successfully");
-
-      fetchExpenses();
-    } catch (error) {
-      console.log(error);
-      alert("Unable to approve expense");
     }
+
   };
 
-  // Reject Expense
   const rejectExpense = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
 
-      await api.patch(
-        `/expenses/${id}/reject`,
-        {
-          remarks: "Rejected by Admin",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+    const remarks = prompt(
+      "Enter rejection reason"
+    );
+
+    if (!remarks) return;
+
+    try {
+
+      await API.patch(`/expenses/${id}/reject`, {
+        remarks,
+      });
+
+      toast.success("Expense Rejected");
+
+      loadExpenses();
+
+    } catch (error) {
+
+      toast.error(
+        error.response?.data?.message ||
+          "Rejection Failed"
       );
 
-      alert("Expense Rejected Successfully");
-
-      fetchExpenses();
-    } catch (error) {
-      console.log(error);
-      alert("Unable to reject expense");
     }
+
   };
+
+  if (loading) {
+
+    return (
+      <DashboardLayout>
+        <LoadingSpinner text="Loading Expenses..." />
+      </DashboardLayout>
+    );
+
+  }
 
   return (
+
     <DashboardLayout>
-      <div className="p-8">
 
-        {/* Heading */}
+      <PageHeader
+        title="All Expenses"
+        subtitle="Manage employee expense requests."
+      >
 
-        <div className="flex justify-between items-center mb-8">
+        <Button
+          color="blue"
+          onClick={loadExpenses}
+        >
+          Refresh
+        </Button>
 
-          <h1 className="text-4xl font-bold text-gray-800">
-            All Expenses
-          </h1>
+      </PageHeader>
 
-          <button
-            onClick={fetchExpenses}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow"
-          >
-            Refresh
-          </button>
+      <div className="bg-white rounded-xl shadow-lg p-6">
+
+        <div className="flex justify-between items-center mb-6">
+
+          <input
+            type="text"
+            placeholder="Search Employee / Title"
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            className="border rounded-lg px-4 py-3 w-80"
+          />
 
         </div>
 
-        {/* Table */}
+        {filteredExpenses.length === 0 ? (
 
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <EmptyState
+            title="No Expenses Found"
+            subtitle="No employee expenses available."
+          />
 
-          <table className="min-w-full">
+        ) : (
 
-            <thead className="bg-gray-100">
+          <div className="overflow-x-auto">
 
-              <tr>
+            <table className="w-full">
 
-                <th className="px-6 py-4 text-left">Employee</th>
-
-                <th className="px-6 py-4 text-left">Title</th>
-
-                <th className="px-6 py-4 text-left">Category</th>
-
-                <th className="px-6 py-4 text-left">Amount</th>
-
-                <th className="px-6 py-4 text-left">Status</th>
-
-                <th className="px-6 py-4 text-center">Actions</th>
-
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {expenses.length === 0 ? (
+              <thead className="bg-slate-800 text-white">
 
                 <tr>
 
-                  <td
-                    colSpan="6"
-                    className="text-center py-8 text-gray-500"
-                  >
-                    No Expenses Found
-                  </td>
+                  <th className="p-3 text-left">
+                    Employee
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Title
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Category
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Amount
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Status
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Receipt
+                  </th>
+
+                  <th className="p-3 text-center">
+                    Actions
+                  </th>
 
                 </tr>
 
-              ) : (
+              </thead>
 
-                expenses.map((expense) => (
+              <tbody>
+
+                {filteredExpenses.map((expense) => (
 
                   <tr
                     key={expense._id}
-                    className="border-t hover:bg-gray-50"
+                    className="border-b hover:bg-gray-50"
                   >
 
-                    <td className="px-6 py-4 font-medium">
-                      {expense.employee.name}
+                    <td className="p-3">
+
+                      <div className="font-semibold">
+
+                        {expense.employee.name}
+
+                      </div>
+
+                      <small className="text-gray-500">
+
+                        {expense.employee.email}
+
+                      </small>
+
                     </td>
 
-                    <td className="px-6 py-4">
+                    <td className="p-3">
+
                       {expense.title}
+
                     </td>
 
-                    <td className="px-6 py-4">
+                    <td className="p-3">
+
                       {expense.category}
+
                     </td>
 
-                    <td className="px-6 py-4 font-semibold">
+                    <td className="p-3 font-semibold">
+
                       ₹{expense.amount}
-                    </td>
-
-                    <td className="px-6 py-4">
-
-                      {expense.status === "Pending" && (
-                        <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-semibold">
-                          Pending
-                        </span>
-                      )}
-
-                      {expense.status === "Approved" && (
-                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
-                          Approved
-                        </span>
-                      )}
-
-                      {expense.status === "Rejected" && (
-                        <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-semibold">
-                          Rejected
-                        </span>
-                      )}
 
                     </td>
 
-                    <td className="px-6 py-4 text-center">
+                    <td className="p-3">
 
-                      <button
-                        onClick={() => approveExpense(expense._id)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mr-3"
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm
+                        ${
+                          expense.status === "Approved"
+                            ? "bg-green-100 text-green-700"
+                            : expense.status === "Rejected"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
                       >
-                        Approve
-                      </button>
+                        {expense.status}
+                      </span>
 
-                      <button
-                        onClick={() => rejectExpense(expense._id)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
-                      >
-                        Reject
-                      </button>
+                    </td>
+
+                    <td className="p-3">
+
+                      {expense.receipt ? (
+
+                        <a
+                          href={`http://localhost:5000/uploads/${expense.receipt}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          View
+                        </a>
+
+                      ) : (
+
+                        <span className="text-gray-400">
+
+                          No Receipt
+
+                        </span>
+
+                      )}
+
+                    </td>
+
+                    <td className="p-3">
+
+                      <div className="flex gap-2 justify-center flex-wrap">
+
+                        <Button
+                          color="gray"
+                          onClick={() =>
+                            navigate(`/expense/${expense._id}`)
+                          }
+                        >
+                          View
+                        </Button>
+
+                        {expense.status === "Pending" && (
+
+                          <>
+                            <Button
+                              color="green"
+                              onClick={() =>
+                                approveExpense(expense._id)
+                              }
+                            >
+                              Approve
+                            </Button>
+
+                            <Button
+                              color="red"
+                              onClick={() =>
+                                rejectExpense(expense._id)
+                              }
+                            >
+                              Reject
+                            </Button>
+                          </>
+
+                        )}
+
+                      </div>
 
                     </td>
 
                   </tr>
 
-                ))
+                ))}
 
-              )}
+              </tbody>
 
-            </tbody>
+            </table>
 
-          </table>
+          </div>
 
-        </div>
+        )}
 
       </div>
-    </DashboardLayout>
-  );
-}
 
-export default AllExpenses;
+    </DashboardLayout>
+
+  );
+
+}
