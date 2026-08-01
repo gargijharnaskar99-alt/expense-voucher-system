@@ -1,13 +1,13 @@
-import { ReceiptX } from "lucide-react";
+import { Receipt } from "lucide-react";
 
 export default function EmptyState({
   title = "No Data Found",
-  subtitle = "There is nothing to display."
+  subtitle = "There is nothing to display.",
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16">
 
-      <ReceiptX
+      <Receipt
         size={70}
         className="text-gray-400"
       />
